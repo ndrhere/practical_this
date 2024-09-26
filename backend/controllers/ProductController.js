@@ -11,34 +11,36 @@ res.status(201).json({product})
 }
 }
 
-exports.getProductsByName = async (req, res) => {
-    const { name } = req.query;
+
+exports.getFilteredProducts = async (req, res) => {
+    const { name, minPrice, maxPrice, quantity, startDate, endDate } = req.query;
+    const filters = {};
+
+    if (name) {
+        filters.product_name = { $regex: name, $options: 'i' }; 
+    }
+    if (quantity) {
+        filters.product_quantity = quantity;
+    }
+    if (minPrice || maxPrice) {
+        filters.price = {};
+        if (minPrice) filters.price.$gte = minPrice;
+        if (maxPrice) filters.price.$lte = maxPrice;
+    }
+    if (startDate && endDate) {
+        filters.created_date = {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
+        };
+    }
+
     try {
-        const products = await Product.find({ product_name: { $regex: name, $options: 'i' } });
+        const products = await Product.find(filters);
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-exports.getProductsByQuantity = async (req, res) => {
-    const { quantity } = req.query;
-    try {
-        const products = await Product.find({ products_quantity: quantity });
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
 
-exports.getProductsByPrice = async (req, res) => {
-    const { min, max } = req.query;
-    try {
-        const products = await Product.find({
-            price: { $gte: min, $lte: max }
-        });
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+

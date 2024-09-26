@@ -8,7 +8,7 @@ product_name: {
     required: true
 },
 product_quantity: {
-    type: String,
+    type: Number,
     required: true
 },
 created_date: {
